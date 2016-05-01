@@ -1,6 +1,6 @@
 ############################################################
 
-# Dockerfile to build MongoDB container images
+# Dockerfile to build Nginx Installed Containers
 
 # Based on Ubuntu
 
@@ -12,48 +12,44 @@ FROM ubuntu
 
 # File Author / Maintainer
 
-MAINTAINER Example McAuthor
+MAINTAINER Maintaner Name
 
-# Update the repository sources list
+# Install Nginx
 
-RUN apt-get update
+# Add application repository URL to the default sources
 
-################## BEGIN INSTALLATION ######################
+RUN echo "deb http://archive.ubuntu.com/ubuntu/ raring main universe" >> /etc/apt/sources.list
 
-# Install MongoDB Following the Instructions at MongoDB Docs
-
-# Ref: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
-
-# Add the package verification key
-
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-
-# Add MongoDB to the repository sources list
-
-RUN echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | tee /etc/apt/sources.list.d/mongodb.list
-
-# Update the repository sources list once more
+# Update the repository
 
 RUN apt-get update
 
-# Install MongoDB package (.deb)
+# Install necessary tools
 
-RUN apt-get install -y mongodb-10gen
+RUN apt-get install -y nano wget dialog net-tools
 
-# Create the default data directory
+# Download and Install Nginx
 
-RUN mkdir -p /data/db
+RUN apt-get install -y nginx
 
-##################### INSTALLATION END #####################
+# Remove the default Nginx configuration file
 
-# Expose the default port
+RUN rm -v /etc/nginx/nginx.conf
 
-EXPOSE 27017
+# Copy a configuration file from the current directory
 
-# Default port to execute the entrypoint (MongoDB)
+ADD nginx.conf /etc/nginx/
 
-CMD ["--port 27017"]
+# Append "daemon off;" to the beginning of the configuration
 
-# Set default container command
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
-ENTRYPOINT usr/bin/mongod
+# Expose ports
+
+EXPOSE 80
+
+# Set the default command to execute
+
+# when creating a new container
+
+CMD service nginx start
